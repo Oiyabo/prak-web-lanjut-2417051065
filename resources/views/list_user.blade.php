@@ -18,4 +18,5 @@
                 <td>{{ $user->nama_kelas }}</td>
         </tr> @endforeach
         </tbody>
-</table> @endsection
+</table> 
+@endsection
