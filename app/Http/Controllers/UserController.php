@@ -20,13 +20,19 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $this->userModel->create([
-            'nama' => $request->input('nama'),
-            'npm' => $request->input('npm'),
-            'kelas_id' => $request->input('kelas_id')
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'npm' => ['required', 'string', 'max:30'],
+            'kelas_id' => ['required', 'exists:kelas,id'],
         ]);
 
-        return redirect()->to('/user');
+        $this->userModel->create([
+            'nama' => $validated['nama'],
+            'nim' => $validated['npm'],
+            'kelas_id' => $validated['kelas_id']
+        ]);
+
+        return redirect()->route('user.index');
     }
 
     public function create()
@@ -46,6 +52,6 @@ class UserController extends Controller
             'title' => 'User List',
             'users' => $this->userModel->getUser()
         ];
-        return view('user_list', $data);
+        return view('list_user', $data);
     }
 }
