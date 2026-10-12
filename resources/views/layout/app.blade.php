@@ -67,6 +67,9 @@
         .button--primary span { display: inline-grid; width: 20px; height: 20px; place-items: center; color: var(--ink); background: #fff; border-radius: 2px; font-size: 16px; line-height: 1; }
         .button--secondary { border-color: var(--line); color: var(--ink); background: transparent; }
         .button--secondary:hover { background: var(--soft); }
+        .button--row { min-height: 32px; padding: 0 10px; font-size: 10px; }
+        .button--danger { color: #fff; background: #9f3b35; }
+        .button--danger:hover { background: #812e29; }
 
         .directory__summary { display: flex; min-height: 54px; align-items: center; gap: 11px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
         .directory__summary p { margin: 0; font-size: 12px; }
@@ -76,7 +79,7 @@
 
         .table-frame { overflow: hidden; margin-top: 18px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); box-shadow: 0 12px 35px #17171708; }
         .table-scroll { overflow-x: auto; }
-        .user-table { width: 100%; min-width: 620px; border-collapse: collapse; text-align: left; }
+        .user-table { width: 100%; min-width: 850px; border-collapse: collapse; text-align: left; }
         .user-table th { height: 48px; padding: 0 22px; color: var(--muted); background: #ececea; font-size: 10px; font-weight: 600; letter-spacing: 0; text-transform: uppercase; }
         .user-table td { height: 76px; padding: 0 22px; border-top: 1px solid #e9ece7; font-size: 13px; }
         .user-table tbody tr { transition: background 140ms ease; }
@@ -87,8 +90,18 @@
         .student__name { font-weight: 600; }
         .npm { color: var(--muted); font-variant-numeric: tabular-nums; }
         .class-tag { display: inline-flex; align-items: center; padding: 6px 9px; border: 1px solid var(--line); border-radius: 2px; color: var(--ink); background: #f5f5f3; font-size: 11px; font-weight: 500; }
+        .user-table__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .user-table__actions form { margin: 0; }
         .empty-state { padding: 54px 20px; color: var(--muted); text-align: center; }
         .empty-state strong { display: block; margin-bottom: 6px; color: var(--ink); font-size: 14px; font-weight: 600; }
+
+        .feedback-stack { display: grid; gap: 10px; margin-bottom: 24px; }
+        .feedback { padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid; background: var(--surface); font-size: 11px; line-height: 1.6; }
+        .feedback--success { border-left-color: #39724d; background: #f2f7f3; }
+        .feedback--error { border-left-color: #9f3b35; background: #fbf3f2; }
+        .feedback strong { display: block; margin-bottom: 4px; font-size: 11px; }
+        .feedback p, .feedback ul { margin: 0; }
+        .feedback ul { padding-left: 18px; }
 
         .create-page { display: grid; grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.22fr); align-items: start; gap: 72px; }
         .create-page__intro { padding-top: 5px; }
@@ -122,11 +135,13 @@
             h1 { font-size: 32px; }
             .directory__intro { align-items: flex-start; flex-direction: column; gap: 22px; margin-bottom: 32px; }
             .summary__note { display: none; }
-            .user-table { min-width: 100%; table-layout: fixed; }
+            .user-table { min-width: 740px; table-layout: fixed; }
+            .user-table--empty { min-width: 100%; }
             .user-table th:first-child, .user-table td.user-table__id { display: none; }
-            .user-table th:nth-child(2) { width: 42%; }
-            .user-table th:nth-child(3) { width: 34%; }
-            .user-table th:nth-child(4) { width: 24%; }
+            .user-table th:nth-child(2) { width: 35%; }
+            .user-table th:nth-child(3) { width: 25%; }
+            .user-table th:nth-child(4) { width: 20%; }
+            .user-table th:nth-child(5) { width: 20%; }
             .user-table th, .user-table td { padding-right: 9px; padding-left: 9px; }
             .user-table th { font-size: 8px; }
             .user-table td { font-size: 10px; overflow-wrap: anywhere; }
@@ -155,6 +170,35 @@
     <div class="site-shell">
         <x-navbar />
         <main class="site-main">
+            @php($successMessage = $success ?? session('success'))
+            @php($errorMessage = $error ?? session('error'))
+            @php($validationErrors = $errors ?? new \Illuminate\Support\ViewErrorBag)
+            @php($hasValidationErrors = $validationErrors->any())
+            @if ($successMessage || $errorMessage || $hasValidationErrors)
+                <div class="feedback-stack" aria-label="Notifikasi">
+                    @if ($successMessage)
+                        <div class="feedback feedback--success" role="status" aria-live="polite">
+                            <strong>Berhasil</strong>
+                            <p>{{ $successMessage }}</p>
+                        </div>
+                    @endif
+                    @if ($errorMessage || $hasValidationErrors)
+                        <div class="feedback feedback--error" role="alert">
+                            <strong>Periksa kembali data</strong>
+                            @if ($errorMessage)
+                                <p>{{ $errorMessage }}</p>
+                            @endif
+                            @if ($hasValidationErrors)
+                                <ul>
+                                    @foreach ($validationErrors->all() as $message)
+                                        <li>{{ $message }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endif
             @yield('content')
         </main>
         <x-footer />
