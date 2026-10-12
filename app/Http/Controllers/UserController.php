@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\UserModel;
 use App\Models\Kelas;
-
+use App\Models\UserModel;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     public $userModel;
+
     public $kelasModel;
 
     public function __construct()
     {
-        $this->userModel = new UserModel();
-        $this->kelasModel = new Kelas();
+        $this->userModel = new UserModel;
+        $this->kelasModel = new Kelas;
     }
 
     public function store(Request $request)
@@ -29,7 +29,7 @@ class UserController extends Controller
         $this->userModel->create([
             'nama' => $validated['nama'],
             'nim' => $validated['npm'],
-            'kelas_id' => $validated['kelas_id']
+            'kelas_id' => $validated['kelas_id'],
         ]);
 
         return redirect()->route('user.index');
@@ -37,12 +37,13 @@ class UserController extends Controller
 
     public function create()
     {
-        $klasModel = new Kelas();
+        $klasModel = new Kelas;
         $kelas = $klasModel->getKelas();
         $data = [
             'title' => 'Create User',
-            'kelas' => $kelas
+            'kelas' => $kelas,
         ];
+
         return view('create_user', $data);
     }
 
@@ -50,8 +51,46 @@ class UserController extends Controller
     {
         $data = [
             'title' => 'User List',
-            'users' => $this->userModel->getUser()
+            'users' => $this->userModel->getUser(),
         ];
+
         return view('list_user', $data);
+    }
+
+    public function edit(string $id)
+    {
+        $user = $this->userModel->findOrFail($id);
+
+        return view('edit_user', [
+            'title' => 'Edit User',
+            'user' => $user,
+            'kelas' => $this->kelasModel->getKelas(),
+        ]);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $user = $this->userModel->findOrFail($id);
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'npm' => ['required', 'string', 'max:30'],
+            'kelas_id' => ['required', 'exists:kelas,id'],
+        ]);
+
+        $user->update([
+            'nama' => $validated['nama'],
+            'nim' => $validated['npm'],
+            'kelas_id' => $validated['kelas_id'],
+        ]);
+
+        return redirect()->route('user.index')->with('success', 'Data pengguna berhasil diperbarui.');
+    }
+
+    public function destroy(string $id)
+    {
+        $user = $this->userModel->findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('user.index')->with('success', 'Data pengguna berhasil dihapus.');
     }
 }
